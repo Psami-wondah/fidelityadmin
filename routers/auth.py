@@ -110,6 +110,3 @@ async def login(data: AdminLogin):
         "token_type": "bearer",
         "expires": f"{ACCESS_TOKEN_EXPIRE_MINUTES}",
     }
-
-
-

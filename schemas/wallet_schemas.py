@@ -12,6 +12,7 @@ class Wallet(BaseModel):
     createdAt: datetime
     updatedAt: datetime
 
+
 class WalletUpdate(BaseModel):
     cash_balance: Optional[int]
     profit: Optional[int]

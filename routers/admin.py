@@ -9,30 +9,34 @@ from db.config import db
 from pymongo.errors import DuplicateKeyError
 from pydantic import BaseModel
 
-app = APIRouter(tags=["Admin Profile 👔"],)
+app = APIRouter(
+    tags=["Admin Profile 👔"],
+)
 
 
 class ResponseMessage(BaseModel):
     message: str
 
+
 class ChangePassword(BaseModel):
     current_password: str
     new_password: str
 
+
 @app.put("/admin/profile/update", response_model=admin_schemas.AdminUpdate)
 async def update_admin_profile(
     image: Optional[UploadFile] = None,
-    username: Optional[str] = Form(None), 
-    first_name: Optional[str] = Form(None), 
+    username: Optional[str] = Form(None),
+    first_name: Optional[str] = Form(None),
     last_name: Optional[str] = Form(None),
-    admin: admin_schemas.Admin = Depends(get_current_admin)
-    ):
+    admin: admin_schemas.Admin = Depends(get_current_admin),
+):
     if image:
-        image_data = image.content_type.split('/')
+        image_data = image.content_type.split("/")
         if image_data[0] != "image":
             return JSONResponse({"message": "file is not an image"})
         image_url = await upload_image(image=image.file)
-    else: 
+    else:
         image_url = None
     if username == admin.username:
         username = None
@@ -41,7 +45,7 @@ async def update_admin_profile(
         first_name=first_name,
         last_name=last_name,
         profile_image_url=image_url,
-        last_updated_at=datetime.utcnow()
+        last_updated_at=datetime.utcnow(),
     )
     data = admin_update_data.dict()
     cleaned_data = data.copy()
@@ -49,7 +53,9 @@ async def update_admin_profile(
         if data[datum] == None:
             del cleaned_data[datum]
     try:
-        db.admins.find_one_and_update({"username": admin.username}, {'$set': cleaned_data})
+        db.admins.find_one_and_update(
+            {"username": admin.username}, {"$set": cleaned_data}
+        )
     except DuplicateKeyError:
         return JSONResponse(
             {"message": "username already exists"},
@@ -61,10 +67,19 @@ async def update_admin_profile(
 
     return admin_schemas.AdminUpdate(**admin_from_db)
 
-@app.put('/admin/profile/change-password', response_model=ResponseMessage)
-async def change_password(passwords: ChangePassword, admin: admin_schemas.Admin = Depends(get_current_admin)):
+
+@app.put("/admin/profile/change-password", response_model=ResponseMessage)
+async def change_password(
+    passwords: ChangePassword, admin: admin_schemas.Admin = Depends(get_current_admin)
+):
     password_status = verify_password(passwords.current_password, admin.hashed_password)
     if password_status:
-        db.admins.find_one_and_update({'username': admin.username}, {'$set': {'hashed_password': get_password_hash(passwords.new_password)}})
-        return {'message': 'password change successful'}
-    return JSONResponse({'message': 'incorrect current password'}, status_code=status.HTTP_401_UNAUTHORIZED)
+        db.admins.find_one_and_update(
+            {"username": admin.username},
+            {"$set": {"hashed_password": get_password_hash(passwords.new_password)}},
+        )
+        return {"message": "password change successful"}
+    return JSONResponse(
+        {"message": "incorrect current password"},
+        status_code=status.HTTP_401_UNAUTHORIZED,
+    )

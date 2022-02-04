@@ -19,19 +19,28 @@ async def get_all_users(admin: admin_schemas.Admin = Depends(get_current_admin))
     users = user_serialize_list(users_from_db)
     return paginate(users)
 
+
 @app.get("/admin/user/{uin}", response_model=user_schemas.User)
 async def get_user(uin: str, admin: admin_schemas.Admin = Depends(get_current_admin)):
     user = db.users.find_one({"uin": uin})
     return user_serialize_dict(user)
 
+
 @app.get("/admin/user/{uin}/wallet", response_model=wallet_schemas.Wallet)
-async def get_user_wallet(uin: str, admin: admin_schemas.Admin = Depends(get_current_admin)):
+async def get_user_wallet(
+    uin: str, admin: admin_schemas.Admin = Depends(get_current_admin)
+):
     user = db.users.find_one({"uin": uin})
     wallet = db.wallets.find_one({"_id": user["wallet"]})
     return wallet_serialize_dict(wallet)
-    
+
+
 @app.put("/admin/user/{uin}/wallet", response_model=wallet_schemas.Wallet)
-async def update_user_wallet(wallet: wallet_schemas.WalletUpdate, uin: str, admin: admin_schemas.Admin = Depends(get_current_admin)):
+async def update_user_wallet(
+    wallet: wallet_schemas.WalletUpdate,
+    uin: str,
+    admin: admin_schemas.Admin = Depends(get_current_admin),
+):
     user = db.users.find_one({"uin": uin})
     wallet = wallet.dict()
     cleaned_wallet = wallet.copy()
@@ -39,12 +48,10 @@ async def update_user_wallet(wallet: wallet_schemas.WalletUpdate, uin: str, admi
         if wallet[item] == None:
             del cleaned_wallet[item]
     cleaned_wallet["updatedAt"] = datetime.utcnow()
-    
+
     db.wallets.find_one_and_update({"_id": user["wallet"]}, {"$set": cleaned_wallet})
     updated_wallet = db.wallets.find_one({"_id": user["wallet"]})
     return updated_wallet
-
-
 
 
 add_pagination(app)
