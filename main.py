@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from schemas.admin_schemas import Admin
 from routers.auth import app as auth_app
 from routers.users import app as user_app
+from routers.admin import app as admin_app
 
 app = FastAPI(
     title="FidelityTrades",
@@ -23,6 +24,7 @@ app.add_middleware(
 
 
 app.include_router(auth_app)
+app.include_router(admin_app)
 app.include_router(user_app)
 
 

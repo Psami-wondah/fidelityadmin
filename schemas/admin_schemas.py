@@ -1,7 +1,7 @@
 from datetime import datetime
 from pydantic import BaseModel
 from db.config import db
-from typing import Any
+from typing import Any, Optional
 
 
 class AdminBase(BaseModel):
@@ -23,7 +23,16 @@ class Admin(AdminBase):
     is_superuser: bool
     created_at: datetime
     last_updated_at: datetime
+    profile_image_url: Optional[str]
 
 
 class AdminCreate(AdminBase):
     password: str
+
+
+class AdminUpdate(BaseModel):
+    username: Optional[str]
+    first_name: Optional[str]
+    last_name: Optional[str]
+    profile_image_url: Optional[str]
+    last_updated_at: datetime
