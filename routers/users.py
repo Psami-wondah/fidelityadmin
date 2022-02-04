@@ -20,6 +20,24 @@ async def get_all_users(admin: admin_schemas.Admin = Depends(get_current_admin))
     return paginate(users)
 
 
+@app.get("/admin/users/plan", response_model=Page[user_schemas.UserBase])
+async def get_all_users_with_a_plan(
+    admin: admin_schemas.Admin = Depends(get_current_admin),
+):
+    users_from_db = db.users.find(
+        {
+            "$or": [
+                {"plans": {"$size": 1}},
+                {"plans": {"$size": 2}},
+                {"plans": {"$size": 3}},
+                {"plans": {"$size": 4}},
+            ]
+        }
+    )
+    users = user_serialize_list(users_from_db)
+    return paginate(users)
+
+
 @app.get("/admin/user/{uin}", response_model=user_schemas.User)
 async def get_user(uin: str, admin: admin_schemas.Admin = Depends(get_current_admin)):
     user = db.users.find_one({"uin": uin})
