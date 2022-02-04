@@ -1,0 +1,7 @@
+server.py
+__pycache__
+.env
+users.json
+wallets.json
+utils/get_data.py
+utils/put_data.py
