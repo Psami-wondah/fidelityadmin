@@ -1,12 +1,13 @@
 from datetime import datetime
 from typing import List
-from fastapi import APIRouter, Depends
-from schemas import user_schemas, admin_schemas, wallet_schemas
+from fastapi import APIRouter, Depends, status
+from schemas import user_schemas, admin_schemas, wallet_schemas, generic_schemas
 from auth.oauth2 import get_current_admin
 from db.config import db
 from serializers.user_serializers import user_serialize_list, user_serialize_dict
 from fastapi_pagination import Page, add_pagination, paginate
 from bson.objectid import ObjectId
+from fastapi.responses import JSONResponse
 
 from serializers.wallet_serializers import wallet_serialize_dict
 
@@ -41,7 +42,11 @@ async def get_all_users_with_a_plan(
 @app.get("/admin/user/{uin}", response_model=user_schemas.User)
 async def get_user(uin: str, admin: admin_schemas.Admin = Depends(get_current_admin)):
     user = db.users.find_one({"uin": uin})
-    return user_serialize_dict(user)
+    if user:
+        return user_serialize_dict(user)
+    return JSONResponse(
+        {"message": "No user with that uin"}, status_code=status.HTTP_404_NOT_FOUND
+    )
 
 
 @app.get("/admin/user/{uin}/wallet", response_model=wallet_schemas.Wallet)
@@ -49,8 +54,12 @@ async def get_user_wallet(
     uin: str, admin: admin_schemas.Admin = Depends(get_current_admin)
 ):
     user = db.users.find_one({"uin": uin})
-    wallet = db.wallets.find_one({"_id": user["wallet"]})
-    return wallet_serialize_dict(wallet)
+    if user:
+        wallet = db.wallets.find_one({"_id": user["wallet"]})
+        return wallet_serialize_dict(wallet)
+    return JSONResponse(
+        {"message": "No user with that uin"}, status_code=status.HTTP_404_NOT_FOUND
+    )
 
 
 @app.put("/admin/user/{uin}/wallet", response_model=wallet_schemas.Wallet)
@@ -60,16 +69,49 @@ async def update_user_wallet(
     admin: admin_schemas.Admin = Depends(get_current_admin),
 ):
     user = db.users.find_one({"uin": uin})
-    wallet = wallet.dict()
-    cleaned_wallet = wallet.copy()
-    for item in wallet:
-        if wallet[item] == None:
-            del cleaned_wallet[item]
-    cleaned_wallet["updatedAt"] = datetime.utcnow()
+    if user:
+        wallet = wallet.dict()
+        cleaned_wallet = wallet.copy()
+        for item in wallet:
+            if wallet[item] == None:
+                del cleaned_wallet[item]
+        cleaned_wallet["updatedAt"] = datetime.utcnow()
 
-    db.wallets.find_one_and_update({"_id": user["wallet"]}, {"$set": cleaned_wallet})
-    updated_wallet = db.wallets.find_one({"_id": user["wallet"]})
-    return updated_wallet
+        db.wallets.find_one_and_update(
+            {"_id": user["wallet"]}, {"$set": cleaned_wallet}
+        )
+        updated_wallet = db.wallets.find_one({"_id": user["wallet"]})
+        return updated_wallet
+    return JSONResponse(
+        {"message": "No user with that uin"}, status_code=status.HTTP_404_NOT_FOUND
+    )
+
+
+@app.put("/admin/user/{uin}/activate", response_model=generic_schemas.ResponseMessage)
+async def deactivate_user(
+    uin: str, admin: admin_schemas.Admin = Depends(get_current_admin)
+):
+    user = db.users.find_one({"uin": uin})
+    if user:
+        user = user_serialize_dict(user)
+        user = user_schemas.User(**user)
+        if user.isEmailVerified == False:
+            db.users.find_one_and_update(
+                {"uin": uin}, {"$set": {"isEmailVerified": True}}
+            )
+            return JSONResponse(
+                {"message": "User activated"}, status_code=status.HTTP_200_OK
+            )
+        else:
+            db.users.find_one_and_update(
+                {"uin": uin}, {"$set": {"isEmailVerified": False}}
+            )
+            return JSONResponse(
+                {"message": "User Deactivated"}, status_code=status.HTTP_200_OK
+            )
+    return JSONResponse(
+        {"message": "No user with that uin"}, status_code=status.HTTP_404_NOT_FOUND
+    )
 
 
 add_pagination(app)

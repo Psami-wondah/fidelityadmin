@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 from fastapi import APIRouter, Form, Depends, UploadFile, status
 from auth.oauth2 import get_current_admin, verify_password, get_password_hash
-from schemas import admin_schemas
+from schemas import admin_schemas, generic_schemas
 from utils.cloudinary import upload_image
 from fastapi.responses import JSONResponse
 from db.config import db
@@ -12,10 +12,6 @@ from pydantic import BaseModel
 app = APIRouter(
     tags=["Admin Profile 👔"],
 )
-
-
-class ResponseMessage(BaseModel):
-    message: str
 
 
 class ChangePassword(BaseModel):
@@ -68,7 +64,9 @@ async def update_admin_profile(
     return admin_schemas.AdminUpdate(**admin_from_db)
 
 
-@app.put("/admin/profile/change-password", response_model=ResponseMessage)
+@app.put(
+    "/admin/profile/change-password", response_model=generic_schemas.ResponseMessage
+)
 async def change_password(
     passwords: ChangePassword, admin: admin_schemas.Admin = Depends(get_current_admin)
 ):
