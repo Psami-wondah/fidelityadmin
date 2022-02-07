@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, EmailStr
+from schemas import wallet_schemas
 
 
 class UserBase(BaseModel):
@@ -25,3 +26,7 @@ class User(UserBase):
     contact: Optional[str]
     country: Optional[str]
     name: Optional[str]
+
+class UserDetails(BaseModel):
+    user: User
+    wallet: wallet_schemas.Wallet

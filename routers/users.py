@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 from typing import List
 from fastapi import APIRouter, Depends, status
 from schemas import user_schemas, admin_schemas, wallet_schemas, generic_schemas
@@ -39,27 +40,23 @@ async def get_all_users_with_a_plan(
     return paginate(users)
 
 
-@app.get("/admin/user/{uin}", response_model=user_schemas.User)
-async def get_user(uin: str, admin: admin_schemas.Admin = Depends(get_current_admin)):
-    user = db.users.find_one({"uin": uin})
-    if user:
-        return user_serialize_dict(user)
-    return JSONResponse(
-        {"message": "No user with that uin"}, status_code=status.HTTP_404_NOT_FOUND
-    )
-
-
-@app.get("/admin/user/{uin}/wallet", response_model=wallet_schemas.Wallet)
-async def get_user_wallet(
-    uin: str, admin: admin_schemas.Admin = Depends(get_current_admin)
-):
+@app.get("/admin/user/{uin}", response_model=user_schemas.UserDetails)
+async def get_user_details(uin: str, admin: admin_schemas.Admin = Depends(get_current_admin)):
     user = db.users.find_one({"uin": uin})
     if user:
         wallet = db.wallets.find_one({"_id": user["wallet"]})
-        return wallet_serialize_dict(wallet)
+        user_dict = user_serialize_dict(user)
+        wallet_dict = wallet_serialize_dict(wallet)
+        return {
+            "user": user_dict,
+            "wallet": wallet_dict
+        }
     return JSONResponse(
         {"message": "No user with that uin"}, status_code=status.HTTP_404_NOT_FOUND
     )
+
+
+
 
 
 @app.put("/admin/user/{uin}/wallet", response_model=wallet_schemas.Wallet)
@@ -112,6 +109,18 @@ async def deactivate_user(
     return JSONResponse(
         {"message": "No user with that uin"}, status_code=status.HTTP_404_NOT_FOUND
     )
+
+# with open("/Users/progressive/Desktop/Projects/dojo-blog/data/db.json", "r") as f:
+#     data = json.load(f)
+
+# blogs = data["blogs"]
+# @app.get('/blogs')
+# async def get_blogs():
+#     return blogs
+
+# @app.get('/blogs/{id}')
+# async def get_blogs(id: int):
+#     return blogs[id-1]
 
 
 add_pagination(app)

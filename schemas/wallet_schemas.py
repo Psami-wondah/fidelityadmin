@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel
 
@@ -9,8 +8,6 @@ class Wallet(BaseModel):
     refferalProfit: int
     depositBalance: int
     withdrawBalance: int
-    createdAt: datetime
-    updatedAt: datetime
 
 
 class WalletUpdate(BaseModel):
