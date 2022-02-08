@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
+from schemas import admin_schemas
 
 
 class Token(BaseModel):
@@ -9,3 +10,6 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: Optional[str] = None
+
+class AdminToken(Token):
+    admin: admin_schemas.AdminBase

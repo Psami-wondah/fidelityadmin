@@ -88,7 +88,7 @@ async def create_admin(admin: admin_schemas.AdminCreate):
     }
 
 
-@app.post("/admin/auth/login", response_model=token_schemas.Token)
+@app.post("/admin/auth/login", response_model=token_schemas.AdminToken)
 async def login(data: AdminLogin):
     admin = authenticate_user(db=db, username=data.username, password=data.password)
     if not admin:
@@ -108,5 +108,6 @@ async def login(data: AdminLogin):
     return {
         "access_token": access_token,
         "token_type": "bearer",
+        "admin": admin,
         "expires": f"{ACCESS_TOKEN_EXPIRE_MINUTES}",
     }
