@@ -16,8 +16,27 @@ app = APIRouter(tags=["Users 👤"])
 
 
 @app.get("/admin/users", response_model=Page[user_schemas.UserBase])
-async def get_all_users(admin: admin_schemas.Admin = Depends(get_current_admin)):
-    users_from_db = db.users.find()
+async def get_all_users(search: str = None, admin: admin_schemas.Admin = Depends(get_current_admin)):
+    if search==None:
+        users_from_db = db.users.find()
+    elif search:
+        search = search.rstrip()
+        if search == "":
+            users_from_db = db.users.find()
+        else:
+            users_from_db = db.users.find({
+                "$or": [
+                    {"username": {
+                        "$regex": f"^{search}",
+                        "$options": "i"
+                    }},
+                    {"email": {
+                        "$regex": f"^{search}",
+                        "$options": "i"
+                    }}
+                ]
+            })
+
     users = user_serialize_list(users_from_db)
     return paginate(users)
 
