@@ -36,6 +36,7 @@ async def get_all_users(search: str = None, admin: admin_schemas.Admin = Depends
             })
 
     users = user_serialize_list(users_from_db)
+    users.reverse()
     return paginate(users)
 
 
@@ -54,6 +55,7 @@ async def get_all_users_with_a_plan(
         }
     )
     users = user_serialize_list(users_from_db)
+    users.reverse()
     return paginate(users)
 
 
