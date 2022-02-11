@@ -109,5 +109,5 @@ async def login(data: AdminLogin):
         "access_token": access_token,
         "token_type": "bearer",
         "admin": admin,
-        "expires": f"{ACCESS_TOKEN_EXPIRE_MINUTES}",
+        "expires": f"{access_token_expires + datetime.utcnow() + timedelta(minutes=60)}",
     }

@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import BaseModel
 from typing import Optional
 from schemas import admin_schemas
@@ -13,3 +14,4 @@ class TokenData(BaseModel):
 
 class AdminToken(Token):
     admin: admin_schemas.AdminBase
+    expires: datetime

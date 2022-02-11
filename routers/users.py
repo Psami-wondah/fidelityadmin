@@ -1,6 +1,4 @@
 from datetime import datetime
-import json
-from typing import List
 from fastapi import APIRouter, Depends, status
 from schemas import user_schemas, admin_schemas, wallet_schemas, generic_schemas
 from auth.oauth2 import get_current_admin
