@@ -1,6 +1,6 @@
 from datetime import datetime
 from fastapi import APIRouter, Depends, status
-from schemas import user_schemas, admin_schemas, wallet_schemas, generic_schemas
+from schemas import user_schemas, admin_schemas, wallet_schemas, generic_schemas, plan_schemas
 from auth.oauth2 import get_current_admin
 from db.config import db
 from serializers.user_serializers import user_serialize_list, user_serialize_dict
@@ -40,7 +40,7 @@ async def get_all_users(search: str = None, admin: admin_schemas.Admin = Depends
     return paginate(users)
 
 
-@app.get("/admin/users/plan", response_model=Page[user_schemas.UserBase])
+@app.get("/admin/users/plan", response_model=Page[plan_schemas.UserPlan])
 async def get_all_users_with_a_plan(
     admin: admin_schemas.Admin = Depends(get_current_admin),
 ):
@@ -51,11 +51,20 @@ async def get_all_users_with_a_plan(
                 {"plans": {"$size": 2}},
                 {"plans": {"$size": 3}},
                 {"plans": {"$size": 4}},
+                {"plans": {"$size": 5}},
+                {"plans": {"$size": 6}},
             ]
         }
     )
     users = user_serialize_list(users_from_db)
     users.reverse()
+    for user in users:
+        user["plans_data"]= []
+        plan_from_db = db.subscriptions.find({"user": ObjectId(user["id"])})
+        for plan in plan_from_db:
+            if plan_from_db:
+                user["plans_data"].append(plan_schemas.Plan(**plan))
+
     return paginate(users)
 
 
