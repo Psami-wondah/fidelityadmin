@@ -18,8 +18,11 @@ class ChangePassword(BaseModel):
     current_password: str
     new_password: str
 
+@app.get("/admin/profile", response_model=admin_schemas.AdminUpdate)
+async def get_admin_profile(admin: admin_schemas.Admin = Depends(get_current_admin)):
+    return admin
 
-@app.put("/admin/profile/update", response_model=admin_schemas.AdminUpdate)
+@app.put("/admin/profile", response_model=admin_schemas.AdminUpdate)
 async def update_admin_profile(
     image: Optional[UploadFile] = None,
     username: Optional[str] = Form(None),

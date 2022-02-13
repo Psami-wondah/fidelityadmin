@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List
 from fastapi import APIRouter, Depends, status
 from schemas import user_schemas, admin_schemas, wallet_schemas, generic_schemas, plan_schemas
 from auth.oauth2 import get_current_admin
@@ -40,7 +41,7 @@ async def get_all_users(search: str = None, admin: admin_schemas.Admin = Depends
     return paginate(users)
 
 
-@app.get("/admin/users/plan", response_model=Page[plan_schemas.UserPlan])
+@app.get("/admin/users/plan", response_model=Page[user_schemas.UserBase])
 async def get_all_users_with_a_plan(
     admin: admin_schemas.Admin = Depends(get_current_admin),
 ):
@@ -58,14 +59,9 @@ async def get_all_users_with_a_plan(
     )
     users = user_serialize_list(users_from_db)
     users.reverse()
-    for user in users:
-        user["plans_data"]= []
-        plan_from_db = db.subscriptions.find({"user": ObjectId(user["id"])})
-        for plan in plan_from_db:
-            if plan_from_db:
-                user["plans_data"].append(plan_schemas.Plan(**plan))
-
     return paginate(users)
+
+
 
 
 @app.get("/admin/user/{uin}", response_model=user_schemas.UserDetails)
@@ -83,6 +79,16 @@ async def get_user_details(uin: str, admin: admin_schemas.Admin = Depends(get_cu
         {"message": "No user with that uin"}, status_code=status.HTTP_404_NOT_FOUND
     )
 
+@app.get("/admin/user/{uin}/plans", response_model=Page[plan_schemas.Plan])
+async def get_user_plans(uin: str, admin: admin_schemas.Admin = Depends(get_current_admin)):
+    user = db.users.find_one({"uin": uin})
+    if user:
+        plans_from_db = db.subscriptions.find({"user": user["_id"]})
+        plans = [plan_schemas.Plan(**plan) for plan in plans_from_db]
+        return paginate(plans)
+    return JSONResponse(
+        {"message": "No user with that uin"}, status_code=status.HTTP_404_NOT_FOUND
+    )
 
 
 
