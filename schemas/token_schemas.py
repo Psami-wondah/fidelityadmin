@@ -13,5 +13,5 @@ class TokenData(BaseModel):
     username: Optional[str] = None
 
 class AdminToken(Token):
-    admin: admin_schemas.AdminBase
+    admin: admin_schemas.AdminGet
     expires: datetime

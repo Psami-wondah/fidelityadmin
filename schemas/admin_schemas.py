@@ -25,6 +25,10 @@ class Admin(AdminBase):
     last_updated_at: datetime
     profile_image_url: Optional[str]
 
+class AdminGet(AdminBase):
+    profile_image_url: Optional[str]
+
+
 
 class AdminCreate(AdminBase):
     password: str
