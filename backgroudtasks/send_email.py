@@ -38,7 +38,7 @@ def send_new_user_email(background_tasks: BackgroundTasks):
             user = UserEmail(**user)
             message = MessageSchema(
                 subject="A new user Joined Fidelity Trades",
-                recipients=["okechukwusamuel16@gmail.com", "Perrycharles282@gmail.com"],
+                recipients=["okechukwusamuel16@gmail.com", "perrycharles282@gmail.com"],
                 template_body={
                     "uin": user.uin,
                     "username": user.username,
