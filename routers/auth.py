@@ -103,7 +103,6 @@ async def login(data: AdminLogin, background_tasks: BackgroundTasks):
             {"message": "Sorry you don't have access"},
             status_code=status.HTTP_401_UNAUTHORIZED,
         )
-    send_new_user_email(background_tasks)
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": admin.username}, expires_delta=access_token_expires

@@ -2,6 +2,7 @@ from fastapi import BackgroundTasks
 from db.config import db
 from serializers.user_serializers import user_serialize_list
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
+from fastapi_mail.errors import ConnectionErrors
 from utils import config as settings
 from schemas.user_schemas import UserEmail
 
@@ -20,7 +21,7 @@ conf = ConnectionConfig(
 )
 
 
-def send_new_user_email(background_tasks: BackgroundTasks):
+async def send_new_user_email():
     count_check = db.user_count.find_one({"name": "counter"})
     users_from_db = db.users.find()
     users = user_serialize_list(users_from_db)
@@ -29,7 +30,7 @@ def send_new_user_email(background_tasks: BackgroundTasks):
         db.user_count.insert_one({"name": "counter", "count": current_count})
 
     previous_count = db.user_count.find_one({"name": "counter"})["count"]
-
+    fm = FastMail(conf)
     if current_count > previous_count:
         difference = current_count - previous_count
         new_user_list = users[-difference:]
@@ -49,7 +50,17 @@ def send_new_user_email(background_tasks: BackgroundTasks):
                 },
                 subtype="html",
             )
-            fm = FastMail(conf)
-            background_tasks.add_task(
-                fm.send_message, message, template_name="new_user_template.html"
-            )
+            
+            await recursive_email_sending(fm=fm, test_message=message)
+    
+    
+
+async def recursive_email_sending(fm: FastMail, test_message):
+    try:
+        await fm.send_message(test_message, template_name="new_user_template.html")
+    except ConnectionErrors:
+        await recursive_email_sending(fm, test_message)
+
+
+
+    
