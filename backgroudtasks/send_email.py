@@ -33,7 +33,7 @@ def send_new_user_email(background_tasks: BackgroundTasks):
     if current_count > previous_count:
         difference = current_count - previous_count
         new_user_list = users[-difference:]
-        db.user_count.insert_one({"name": "counter", "count": current_count})
+        db.user_count.find_one_and_update({"name": "counter"}, {'$set':{"count": current_count}})
         for user in new_user_list:
             user = UserEmail(**user)
             message = MessageSchema(
@@ -44,7 +44,7 @@ def send_new_user_email(background_tasks: BackgroundTasks):
                     "username": user.username,
                     "email": user.email,
                     "is_active": user.isEmailVerified,
-                    "name": user.name,
+                    "name": user.username,
                     "created_at": user.createdAt.strftime("%d %B, %Y %a. %I:%M %p"),
                 },
                 subtype="html",

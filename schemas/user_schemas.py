@@ -39,4 +39,4 @@ class UserEmail(BaseModel):
     email: EmailStr
     isEmailVerified: bool
     createdAt: datetime
-    name: str
+
