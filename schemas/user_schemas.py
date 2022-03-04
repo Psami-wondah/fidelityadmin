@@ -27,6 +27,16 @@ class User(UserBase):
     country: Optional[str]
     name: Optional[str]
 
+
 class UserDetails(BaseModel):
     user: User
     wallet: wallet_schemas.Wallet
+
+
+class UserEmail(BaseModel):
+    uin: str
+    username: str
+    email: EmailStr
+    isEmailVerified: bool
+    createdAt: datetime
+    name: str

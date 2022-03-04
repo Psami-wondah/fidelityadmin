@@ -13,5 +13,6 @@ class Plan(BaseModel):
     createdAt: datetime
     updatedAt: datetime
 
+
 class UserPlan(user_schemas.UserBase):
     plans_data: List[Plan]

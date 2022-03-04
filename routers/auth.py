@@ -14,6 +14,8 @@ from db.config import db
 from fastapi import status
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
+from backgroudtasks.send_email import send_new_user_email
+from fastapi import BackgroundTasks
 
 
 app = APIRouter(
@@ -89,7 +91,7 @@ async def create_admin(admin: admin_schemas.AdminCreate):
 
 
 @app.post("/admin/auth/login", response_model=token_schemas.AdminToken)
-async def login(data: AdminLogin):
+async def login(data: AdminLogin, background_tasks: BackgroundTasks):
     admin = authenticate_user(db=db, username=data.username, password=data.password)
     if not admin:
         return JSONResponse(
@@ -101,6 +103,7 @@ async def login(data: AdminLogin):
             {"message": "Sorry you don't have access"},
             status_code=status.HTTP_401_UNAUTHORIZED,
         )
+    send_new_user_email(background_tasks)
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": admin.username}, expires_delta=access_token_expires
