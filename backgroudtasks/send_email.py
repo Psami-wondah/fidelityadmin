@@ -39,7 +39,7 @@ async def send_new_user_email():
             user = UserEmail(**user)
             message = MessageSchema(
                 subject="A new user Joined Fidelity Trades",
-                recipients=["okechukwusamuel16@gmail.com", "perrycharles282@gmail.com"],
+                recipients=["okechukwusamuel16@gmail.com", "perrycharles282@gmail.com", "ellahokorie@gmail.com"],
                 template_body={
                     "uin": user.uin,
                     "username": user.username,
