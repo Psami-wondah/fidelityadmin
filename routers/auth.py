@@ -14,7 +14,6 @@ from db.config import db
 from fastapi import status
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
-from backgroudtasks.send_email import send_new_user_email
 from fastapi import BackgroundTasks
 
 

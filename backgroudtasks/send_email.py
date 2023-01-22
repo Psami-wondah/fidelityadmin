@@ -21,45 +21,45 @@ conf = ConnectionConfig(
 )
 
 
-async def send_new_user_email():
-    count_check = db.user_count.find_one({"name": "counter"})
-    users_from_db = db.users.find()
-    users = user_serialize_list(users_from_db)
-    current_count = len(users)
-    if not count_check:
-        db.user_count.insert_one({"name": "counter", "count": current_count})
+# async def send_new_user_email():
+#     count_check = db.user_count.find_one({"name": "counter"})
+#     users_from_db = db.users.find()
+#     users = user_serialize_list(users_from_db)
+#     current_count = len(users)
+#     if not count_check:
+#         db.user_count.insert_one({"name": "counter", "count": current_count})
 
-    previous_count = db.user_count.find_one({"name": "counter"})["count"]
-    fm = FastMail(conf)
-    if current_count > previous_count:
-        difference = current_count - previous_count
-        new_user_list = users[-difference:]
-        db.user_count.find_one_and_update({"name": "counter"}, {'$set':{"count": current_count}})
-        for user in new_user_list:
-            user = UserEmail(**user)
-            message = MessageSchema(
-                subject="A new user Joined Fidelity Trades",
-                recipients=["okechukwusamuel16@gmail.com", "perrycharles282@gmail.com", "ellahokorie@gmail.com"],
-                template_body={
-                    "uin": user.uin,
-                    "username": user.username,
-                    "email": user.email,
-                    "is_active": user.isEmailVerified,
-                    "name": user.username,
-                    "created_at": user.createdAt.strftime("%d %B, %Y %a. %I:%M %p"),
-                },
-                subtype="html",
-            )
+#     previous_count = db.user_count.find_one({"name": "counter"})["count"]
+#     fm = FastMail(conf)
+#     if current_count > previous_count:
+#         difference = current_count - previous_count
+#         new_user_list = users[-difference:]
+#         db.user_count.find_one_and_update({"name": "counter"}, {'$set':{"count": current_count}})
+#         for user in new_user_list:
+#             user = UserEmail(**user)
+#             message = MessageSchema(
+#                 subject="A new user Joined Fidelity Trades",
+#                 recipients=["okechukwusamuel16@gmail.com", "perrycharles282@gmail.com", "ellahokorie@gmail.com"],
+#                 template_body={
+#                     "uin": user.uin,
+#                     "username": user.username,
+#                     "email": user.email,
+#                     "is_active": user.isEmailVerified,
+#                     "name": user.username,
+#                     "created_at": user.createdAt.strftime("%d %B, %Y %a. %I:%M %p"),
+#                 },
+#                 subtype="html",
+#             )
             
-            await recursive_email_sending(fm=fm, test_message=message)
+#             await recursive_email_sending(fm=fm, test_message=message)
     
     
 
-async def recursive_email_sending(fm: FastMail, test_message):
-    try:
-        await fm.send_message(test_message, template_name="new_user_template.html")
-    except ConnectionErrors:
-        await recursive_email_sending(fm, test_message)
+# async def recursive_email_sending(fm: FastMail, test_message):
+#     try:
+#         await fm.send_message(test_message, template_name="new_user_template.html")
+#     except ConnectionErrors:
+#         await recursive_email_sending(fm, test_message)
 
 
 

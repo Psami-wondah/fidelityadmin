@@ -5,7 +5,7 @@ from routers.auth import app as auth_app
 from routers.users import app as user_app
 from routers.admin import app as admin_app
 from fastapi_utils.tasks import repeat_every
-from backgroudtasks.send_email import send_new_user_email
+# from backgroudtasks.send_email import send_new_user_email
 from fastapi import BackgroundTasks
 
 app = FastAPI(
@@ -35,8 +35,8 @@ app.include_router(user_app)
 async def startup():
     Admin.init()
 
-@app.on_event("startup")
-@repeat_every(seconds=60*5)
-async def send_email() -> None:
-    await send_new_user_email()
+# @app.on_event("startup")
+# @repeat_every(seconds=60*5)
+# async def send_email() -> None:
+#     await send_new_user_email()
     
